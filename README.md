@@ -1,5 +1,7 @@
 # @shipitandpray/pretext-accordion
 
+[![Live Demo](https://img.shields.io/badge/demo-live-brightgreen)](https://shipitandpray.github.io/pretext-accordion/) [![npm](https://img.shields.io/npm/v/@shipitandpray/pretext-accordion?color=blue)](https://www.npmjs.com/package/@shipitandpray/pretext-accordion)
+
 **Zero-CLS accordion component powered by predictive text measurement.**
 
 [![npm version](https://img.shields.io/npm/v/@shipitandpray/pretext-accordion)](https://www.npmjs.com/package/@shipitandpray/pretext-accordion)
