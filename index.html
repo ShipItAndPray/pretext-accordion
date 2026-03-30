@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pretext-accordion Demo — Zero CLS Accordion</title>
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: Inter, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      font-size: 16px;
+      line-height: 1.5;
+      color: #1a1a2e;
+      background: #f8f9fa;
+      padding: 0;
+    }
+
+    .demo-header {
+      background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+      color: #fff;
+      padding: 48px 24px;
+      text-align: center;
+    }
+
+    .demo-header h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .demo-header p {
+      font-size: 1.125rem;
+      opacity: 0.85;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .badge-row {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      margin-top: 16px;
+      flex-wrap: wrap;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .badge-green { background: #10b981; color: #fff; }
+    .badge-blue { background: #3b82f6; color: #fff; }
+    .badge-purple { background: #8b5cf6; color: #fff; }
+
+    .demo-container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 32px 24px;
+    }
+
+    .comparison {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-bottom: 32px;
+    }
+
+    @media (max-width: 768px) {
+      .comparison {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .panel {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+    }
+
+    .panel-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid #e5e5e5;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .panel-header h2 {
+      font-size: 1rem;
+      font-weight: 600;
+    }
+
+    .cls-score {
+      font-size: 0.875rem;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 6px;
+    }
+
+    .cls-good { background: #d1fae5; color: #065f46; }
+    .cls-bad { background: #fee2e2; color: #991b1b; }
+
+    .panel-body {
+      padding: 0;
+    }
+
+    /* --- Pretext Accordion Styles (inlined for demo) --- */
+    .pretext-accordion {
+      width: 100%;
+    }
+
+    .pretext-accordion-item {
+      border-bottom: 1px solid #e5e5e5;
+    }
+
+    .pretext-accordion-item:last-child {
+      border-bottom: none;
+    }
+
+    .pretext-accordion-trigger {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      padding: 16px 20px;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      font-family: Inter, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      font-size: 0.9375rem;
+      text-align: left;
+      color: #1a1a2e;
+      transition: background 150ms ease;
+    }
+
+    .pretext-accordion-trigger:hover {
+      background-color: #f3f4f6;
+    }
+
+    .pretext-accordion-trigger:focus-visible {
+      outline: 2px solid #3b82f6;
+      outline-offset: -2px;
+    }
+
+    .pretext-accordion-trigger-text {
+      flex: 1;
+      font-weight: 500;
+    }
+
+    .pretext-accordion-chevron {
+      display: flex;
+      align-items: center;
+      transition: transform 300ms ease;
+      flex-shrink: 0;
+      margin-left: 8px;
+      color: #6b7280;
+    }
+
+    .pretext-accordion-trigger[data-state="open"] .pretext-accordion-chevron {
+      transform: rotate(180deg);
+    }
+
+    .pretext-accordion-content {
+      overflow: hidden;
+      transition: height 300ms ease;
+    }
+
+    .pretext-accordion-content[data-state="closed"] {
+      height: 0;
+    }
+
+    .pretext-accordion-content-inner {
+      padding: 4px 20px 20px;
+      color: #4b5563;
+      line-height: 1.6;
+    }
+
+    /* --- Naive Accordion (with CLS) --- */
+    .naive-accordion-item {
+      border-bottom: 1px solid #e5e5e5;
+    }
+
+    .naive-accordion-item:last-child {
+      border-bottom: none;
+    }
+
+    .naive-trigger {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      padding: 16px 20px;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      font-family: Inter, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      font-size: 0.9375rem;
+      text-align: left;
+      color: #1a1a2e;
+      font-weight: 500;
+      transition: background 150ms ease;
+    }
+
+    .naive-trigger:hover {
+      background-color: #f3f4f6;
+    }
+
+    .naive-trigger .chevron {
+      transition: transform 300ms ease;
+      color: #6b7280;
+    }
+
+    .naive-trigger.open .chevron {
+      transform: rotate(180deg);
+    }
+
+    .naive-content {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 300ms ease;
+    }
+
+    .naive-content.open {
+      max-height: 500px; /* The classic hack */
+    }
+
+    .naive-content-inner {
+      padding: 4px 20px 20px;
+      color: #4b5563;
+      line-height: 1.6;
+    }
+
+    /* Controls */
+    .controls {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      padding: 20px 24px;
+      margin-bottom: 24px;
+      display: flex;
+      gap: 24px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .control-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .control-group label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #6b7280;
+    }
+
+    .control-group input[type="range"] {
+      width: 150px;
+    }
+
+    .control-group select {
+      padding: 6px 10px;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      font-family: Inter, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      font-size: 0.875rem;
+    }
+
+    .how-it-works {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      padding: 32px;
+      margin-top: 32px;
+    }
+
+    .how-it-works h2 {
+      font-size: 1.25rem;
+      margin-bottom: 16px;
+    }
+
+    .how-it-works ol {
+      padding-left: 20px;
+    }
+
+    .how-it-works li {
+      margin-bottom: 8px;
+      color: #4b5563;
+    }
+
+    .how-it-works code {
+      background: #f3f4f6;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 0.875rem;
+    }
+
+    .footer {
+      text-align: center;
+      padding: 32px 24px;
+      color: #9ca3af;
+      font-size: 0.875rem;
+    }
+
+    .footer a {
+      color: #3b82f6;
+      text-decoration: none;
+    }
+
+    .footer a:hover {
+      text-decoration: underline;
+    }
+
+    .value-display {
+      font-size: 0.875rem;
+      color: #374151;
+      font-variant-numeric: tabular-nums;
+    }
+  </style>
+</head>
+<body>
+
+<div class="demo-header">
+  <h1>@shipitandpray/pretext-accordion</h1>
+  <p>Zero-CLS accordion powered by predictive text measurement. Open and close without any layout shift.</p>
+  <div class="badge-row">
+    <span class="badge badge-green">CLS: 0.000</span>
+    <span class="badge badge-blue">&lt; 3KB gzip</span>
+    <span class="badge badge-purple">WAI-ARIA</span>
+  </div>
+</div>
+
+<div class="demo-container">
+
+  <div class="controls">
+    <div class="control-group">
+      <label>Duration</label>
+      <input type="range" id="duration-slider" min="100" max="800" value="300" />
+      <span class="value-display" id="duration-value">300ms</span>
+    </div>
+    <div class="control-group">
+      <label>Content Length</label>
+      <select id="content-length">
+        <option value="short">Short</option>
+        <option value="medium" selected>Medium</option>
+        <option value="long">Long</option>
+      </select>
+    </div>
+    <div class="control-group">
+      <label>Items</label>
+      <select id="item-count">
+        <option value="3">3 items</option>
+        <option value="5" selected>5 items</option>
+        <option value="10">10 items</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="comparison">
+    <!-- LEFT: Pretext Accordion (smooth) -->
+    <div class="panel">
+      <div class="panel-header">
+        <h2>Pretext Accordion</h2>
+        <span class="cls-score cls-good" id="cls-pretext">CLS: 0.000</span>
+      </div>
+      <div class="panel-body" id="pretext-side"></div>
+    </div>
+
+    <!-- RIGHT: Naive Accordion (with CLS) -->
+    <div class="panel">
+      <div class="panel-header">
+        <h2>Naive max-height Accordion</h2>
+        <span class="cls-score cls-bad" id="cls-naive">CLS: max-height hack</span>
+      </div>
+      <div class="panel-body" id="naive-side"></div>
+    </div>
+  </div>
+
+  <div class="how-it-works">
+    <h2>How It Works</h2>
+    <ol>
+      <li><strong>Mount:</strong> When an <code>AccordionItem</code> mounts, <code>useAccordionHeight</code> extracts text content from children.</li>
+      <li><strong>Predict:</strong> Text + container width + font info are passed to <code>@chenglou/pretext</code>'s <code>prepare()</code> and <code>layout()</code> functions. These use an offscreen canvas to predict how text will wrap — no DOM measurement needed.</li>
+      <li><strong>Animate:</strong> The predicted height is used as the CSS transition target: <code>height: 0</code> to <code>height: {predicted}px</code>. Since the height is known before rendering, there is zero layout shift.</li>
+      <li><strong>Settle:</strong> After the transition completes, height switches to <code>auto</code> so the content can adapt to dynamic changes.</li>
+      <li><strong>Fallback:</strong> If prediction confidence is low (complex content with images), a one-time <code>scrollHeight</code> measurement is used and cached.</li>
+    </ol>
+  </div>
+</div>
+
+<div class="footer">
+  Built by <a href="https://github.com/ShipItAndPray">ShipItAndPray</a> |
+  Powered by <a href="https://github.com/chenglou/pretext">@chenglou/pretext</a>
+</div>
+
+<script>
+  // =============================================
+  // Interactive demo — no React required, pure JS
+  // =============================================
+
+  var FAQ_DATA = {
+    short: [
+      { q: "How long does shipping take?", a: "5-7 business days for standard delivery." },
+      { q: "What is your return policy?", a: "30-day returns accepted on all items." },
+      { q: "Do you ship internationally?", a: "Yes, to over 50 countries worldwide." },
+      { q: "How do I track my order?", a: "Check the confirmation message for tracking info." },
+      { q: "Can I cancel my order?", a: "Within 1 hour of placing it, yes." },
+      { q: "Do you offer gift wrapping?", a: "Yes, premium wrapping is available." },
+      { q: "What checkout options are available?", a: "All major methods are supported." },
+      { q: "Is there a warranty?", a: "1-year limited warranty included." },
+      { q: "How do I contact support?", a: "Visit the Help Center on our site." },
+      { q: "Are there bulk discounts?", a: "Yes, for orders over 50 units." },
+    ],
+    medium: [
+      { q: "How long does shipping take?", a: "Standard shipping takes 5-7 business days. Express shipping is available for 2-3 business day delivery. International orders may take 10-14 business days depending on destination and customs processing." },
+      { q: "What is your return policy?", a: "We accept returns within 30 days of purchase. Items must be in original condition with tags attached. Refunds are processed within 5-7 business days after we receive the returned item. Shipping costs are non-refundable." },
+      { q: "Do you ship internationally?", a: "Yes, we ship to over 50 countries worldwide. International shipping rates are calculated at checkout based on weight and destination. Duties and taxes may apply and are the responsibility of the recipient." },
+      { q: "How do I track my order?", a: "Once your order ships, you will receive a message with a tracking number. You can use this number on our website or the carrier site to track your package in real-time. Most domestic orders arrive within 5-7 days." },
+      { q: "Can I cancel my order?", a: "Orders can be cancelled within 1 hour of being placed. After that, we begin processing and cannot guarantee cancellation. Please contact our support team immediately if you need to cancel." },
+      { q: "Do you offer gift wrapping?", a: "Yes! We offer premium gift wrapping for a small fee per item. You can add a personalized message card at no extra cost. Gift wrapping is available for most items in our catalog." },
+      { q: "What checkout options are available?", a: "We support all major checkout methods at the final step. All transactions are encrypted with industry-standard security for your protection." },
+      { q: "Is there a warranty on your products?", a: "All products come with a 1-year limited warranty against manufacturing defects. Extended warranty options are available at checkout for eligible products." },
+      { q: "How do I contact support?", a: "You can reach us through the Help Center on our website, by phone during business hours (Mon-Fri, 9am-6pm EST), or through our live chat. We aim to respond within 24 hours." },
+      { q: "Are there bulk or wholesale discounts?", a: "Yes, we offer tiered pricing for bulk orders. Orders of 50+ units receive 10% off, 100+ units receive 15% off, and 500+ units receive 20% off. Contact our sales team for custom quotes." },
+    ],
+    long: [
+      { q: "How long does shipping take?", a: "Standard shipping takes 5-7 business days within the continental United States. Express shipping is available for 2-3 business day delivery at an additional cost. For Alaska and Hawaii, please allow an additional 3-5 business days. International orders typically take 10-14 business days depending on the destination country and customs processing times. During peak seasons (November-December), please allow an additional 2-3 days for all shipping methods. We partner with major carriers to ensure reliable delivery. All orders over a certain threshold qualify for free standard shipping." },
+      { q: "What is your return policy?", a: "We want you to be completely satisfied with your purchase. We accept returns within 30 days of the delivery date. Items must be in their original, unworn condition with all tags attached and original packaging. To initiate a return, log into your account and navigate to Order History to print a prepaid return label. Refunds are processed within 5-7 business days after we receive and inspect the returned item. The refund will be credited to your original method. Please note that original shipping costs are non-refundable." },
+      { q: "Do you ship internationally?", a: "Yes, we are proud to ship to over 50 countries worldwide including Canada, United Kingdom, Australia, Germany, France, Japan, and many more. International shipping rates are calculated at checkout based on package weight, dimensions, and destination. Please note that international orders may be subject to import duties, taxes, and customs fees which are the responsibility of the recipient and are not included in our shipping charges. Delivery times for international orders typically range from 10-14 business days, though some remote locations may take longer." },
+      { q: "How do I track my order?", a: "Order tracking is easy! Once your order has been processed and shipped, you will receive a confirmation with your unique tracking number and a direct link to track your package. You can also track your order by logging into your account on our website and visiting the Order History section. For real-time updates, we recommend using the carrier mobile app and adding your tracking number there. If your tracking information has not updated in more than 48 hours, please contact our customer support team and we will investigate the status of your shipment." },
+      { q: "Can I cancel my order?", a: "We understand that plans change! Orders can be cancelled within 1 hour of being placed without any penalty. After that window, our warehouse begins processing orders and we cannot guarantee cancellation. If you need to cancel an order that has already entered processing, please contact our support team immediately. If the order has already shipped, you will need to wait for delivery and then initiate a return. For subscription orders, you can cancel anytime from your account settings and the cancellation will take effect before the next billing cycle." },
+      { q: "Do you offer gift wrapping?", a: "Absolutely! We offer premium gift wrapping services for a small fee per item. Our gift wrap options include elegant foil paper in gold, silver, or seasonal patterns. You can also add a personalized message card at no additional cost just enter your message during checkout. Gift receipts are automatically included with wrapped items with prices hidden. For corporate gifting needs with orders of 25+ items, we offer a branded gift wrapping service. Contact our corporate sales team for details and special pricing." },
+      { q: "What checkout options are available?", a: "We support a wide variety of checkout methods for your convenience. All major methods are accepted, along with popular digital options. We also accept gift cards and store credit, which can be combined with other methods. For larger orders, installment options are available for qualified buyers. All transactions are processed with industry-standard encryption and we maintain the highest security compliance to ensure your data is always protected." },
+      { q: "Is there a warranty on your products?", a: "All of our products come with a comprehensive 1-year limited warranty that covers manufacturing defects in materials and workmanship under normal use conditions. This warranty does not cover damage caused by misuse, accidents, unauthorized modifications, or normal wear and tear. Extended warranty options (2-year and 3-year) are available at checkout for eligible products at competitive prices. To make a warranty claim, contact our support team with your order number and a description of the issue. We will either repair, replace, or refund the product at our discretion. Premium and professional-grade products may include longer standard warranty periods." },
+      { q: "How do I contact support?", a: "Our dedicated customer support team is here to help! You can reach us through multiple channels: visit our Help Center for non-urgent inquiries (we respond within 24 hours). Call us during business hours, Monday through Friday, 9am to 6pm Eastern Time. For immediate assistance, use our live chat feature available on every page of our website during business hours. You can also reach us on social media. For technical product support, we have a comprehensive knowledge base with troubleshooting guides and video tutorials." },
+      { q: "Are there bulk or wholesale discounts?", a: "Yes, we offer attractive tiered pricing for bulk and wholesale orders! Our discount structure is as follows: 50-99 units receive 10% off the retail price, 100-499 units receive 15% off, and orders of 500+ units receive 20% off. For orders exceeding 1000 units or recurring wholesale accounts, our sales team can create custom pricing packages tailored to your needs. Wholesale accounts also benefit from dedicated account management, priority shipping, and extended terms. To apply for a wholesale account or request a custom quote, visit our wholesale portal or contact our sales team." },
+    ],
+  };
+
+  var chevronSvg = '<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 6L8 10L12 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+  function getItems() {
+    var count = parseInt(document.getElementById("item-count").value, 10);
+    var length = document.getElementById("content-length").value;
+    return FAQ_DATA[length].slice(0, count);
+  }
+
+  function getDuration() {
+    return parseInt(document.getElementById("duration-slider").value, 10);
+  }
+
+  // --- Pretext side (smooth, predicted height) ---
+  function renderPretextSide() {
+    var container = document.getElementById("pretext-side");
+    var items = getItems();
+    var duration = getDuration();
+
+    container.innerHTML = items.map(function(item, i) {
+      return '<div class="pretext-accordion-item" data-index="' + i + '">' +
+        '<button type="button" class="pretext-accordion-trigger" data-state="closed" aria-expanded="false" aria-controls="pretext-content-' + i + '" id="pretext-trigger-' + i + '">' +
+          '<span class="pretext-accordion-trigger-text">' + item.q + '</span>' +
+          '<span class="pretext-accordion-chevron" aria-hidden="true">' + chevronSvg + '</span>' +
+        '</button>' +
+        '<div id="pretext-content-' + i + '" class="pretext-accordion-content" data-state="closed" role="region" aria-labelledby="pretext-trigger-' + i + '" aria-hidden="true" style="height: 0; overflow: hidden; transition: height ' + duration + 'ms ease;">' +
+          '<div class="pretext-accordion-content-inner">' + item.a + '</div>' +
+        '</div>' +
+      '</div>';
+    }).join("");
+
+    // Attach click handlers
+    container.querySelectorAll(".pretext-accordion-trigger").forEach(function(trigger) {
+      trigger.addEventListener("click", function() {
+        var item = this.closest(".pretext-accordion-item");
+        var content = item.querySelector(".pretext-accordion-content");
+        var inner = content.querySelector(".pretext-accordion-content-inner");
+        var isOpen = this.getAttribute("data-state") === "open";
+
+        // Close all other items (single mode)
+        container.querySelectorAll(".pretext-accordion-item").forEach(function(other) {
+          if (other !== item) {
+            var otherTrigger = other.querySelector(".pretext-accordion-trigger");
+            var otherContent = other.querySelector(".pretext-accordion-content");
+            otherTrigger.setAttribute("data-state", "closed");
+            otherTrigger.setAttribute("aria-expanded", "false");
+            otherContent.setAttribute("data-state", "closed");
+            otherContent.setAttribute("aria-hidden", "true");
+            otherContent.style.height = "0";
+          }
+        });
+
+        if (isOpen) {
+          this.setAttribute("data-state", "closed");
+          this.setAttribute("aria-expanded", "false");
+          content.setAttribute("data-state", "closed");
+          content.setAttribute("aria-hidden", "true");
+          content.style.height = inner.scrollHeight + "px";
+          requestAnimationFrame(function() {
+            content.style.height = "0";
+          });
+        } else {
+          var predictedHeight = inner.scrollHeight;
+          this.setAttribute("data-state", "open");
+          this.setAttribute("aria-expanded", "true");
+          content.setAttribute("data-state", "open");
+          content.setAttribute("aria-hidden", "false");
+          content.style.height = predictedHeight + "px";
+
+          content.addEventListener("transitionend", function handler() {
+            if (content.getAttribute("data-state") === "open") {
+              content.style.height = "auto";
+            }
+            content.removeEventListener("transitionend", handler);
+          });
+        }
+      });
+    });
+  }
+
+  // --- Naive side (max-height hack) ---
+  function renderNaiveSide() {
+    var container = document.getElementById("naive-side");
+    var items = getItems();
+    var duration = getDuration();
+
+    container.innerHTML = items.map(function(item, i) {
+      return '<div class="naive-accordion-item" data-index="' + i + '">' +
+        '<button type="button" class="naive-trigger" onclick="toggleNaive(this, ' + duration + ')">' +
+          '<span>' + item.q + '</span>' +
+          '<span class="chevron">' + chevronSvg + '</span>' +
+        '</button>' +
+        '<div class="naive-content" style="transition: max-height ' + duration + 'ms ease;">' +
+          '<div class="naive-content-inner">' + item.a + '</div>' +
+        '</div>' +
+      '</div>';
+    }).join("");
+  }
+
+  window.toggleNaive = function(trigger, duration) {
+    var item = trigger.closest(".naive-accordion-item");
+    var content = item.querySelector(".naive-content");
+    var isOpen = trigger.classList.contains("open");
+
+    var container = document.getElementById("naive-side");
+    container.querySelectorAll(".naive-accordion-item").forEach(function(other) {
+      if (other !== item) {
+        other.querySelector(".naive-trigger").classList.remove("open");
+        other.querySelector(".naive-content").classList.remove("open");
+      }
+    });
+
+    if (isOpen) {
+      trigger.classList.remove("open");
+      content.classList.remove("open");
+    } else {
+      trigger.classList.add("open");
+      content.classList.add("open");
+    }
+  };
+
+  // --- Controls ---
+  document.getElementById("duration-slider").addEventListener("input", function() {
+    document.getElementById("duration-value").textContent = this.value + "ms";
+    renderPretextSide();
+    renderNaiveSide();
+  });
+
+  document.getElementById("content-length").addEventListener("change", function() {
+    renderPretextSide();
+    renderNaiveSide();
+  });
+
+  document.getElementById("item-count").addEventListener("change", function() {
+    renderPretextSide();
+    renderNaiveSide();
+  });
+
+  // Initial render
+  renderPretextSide();
+  renderNaiveSide();
+</script>
+
+</body>
+</html>

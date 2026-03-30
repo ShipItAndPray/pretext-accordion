@@ -1,0 +1,71 @@
+/* @shipitandpray/pretext-accordion — Minimal default styles */
+
+.pretext-accordion {
+  width: 100%;
+}
+
+.pretext-accordion-item {
+  border-bottom: 1px solid #e5e5e5;
+}
+
+.pretext-accordion-item:last-child {
+  border-bottom: none;
+}
+
+.pretext-accordion-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 16px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+  color: inherit;
+}
+
+.pretext-accordion-trigger:hover {
+  background-color: rgba(0, 0, 0, 0.04);
+}
+
+.pretext-accordion-trigger:focus-visible {
+  outline: 2px solid #0066ff;
+  outline-offset: -2px;
+}
+
+.pretext-accordion-trigger[data-disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pretext-accordion-trigger-text {
+  flex: 1;
+  font-weight: 500;
+}
+
+.pretext-accordion-chevron {
+  display: flex;
+  align-items: center;
+  transition: transform 300ms ease;
+  flex-shrink: 0;
+  margin-left: 8px;
+}
+
+.pretext-accordion-trigger[data-state="open"] .pretext-accordion-chevron {
+  transform: rotate(180deg);
+}
+
+.pretext-accordion-content {
+  overflow: hidden;
+}
+
+.pretext-accordion-content-inner {
+  padding: 0 16px 16px 16px;
+  line-height: 1.5;
+}
+
+.pretext-accordion-content[data-state="closed"] {
+  height: 0;
+}
